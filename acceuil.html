@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      integrity="sha512-h0WoP1Q7OwsqFhLb0xOxm+8M2/eEaV3mENm2XGyRpoxkZl+snO7DtlAOTcKf2xtevJtAfjsLI0EHx93j6GAsPw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f8f8f8;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      #cart {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .quantity {
+        display: flex;
+        align-items: center;
+      }
+
+      .quantity button {
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin: 0 5px;
+      }
+
+      .delete-btn {
+        background-color: #ff4f4f;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      .heart-btn {
+        cursor: pointer;
+        font-size: 20px;
+        color: #ccc;
+        transition: color 0.3s ease;
+      }
+
+      .heart-btn.liked {
+        color: #ff4f4f;
+      }
+
+      #totalPrice {
+        text-align: right;
+        padding: 15px;
+        font-size: 18px;
+        background-color: #f2f2f2;
+      }
+
+      #addProductForm {
+        padding: 15px;
+        background-color: #f2f2f2;
+      }
+
+      #addProductForm input {
+        padding: 8px;
+        margin-right: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      #addProductForm button {
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      #addProductForm button:hover {
+        background-color: #45a049;
+      }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        updateTotalPrice();
+      });
+
+      function adjustQuantity(row, isIncrease) {
+        var quantityElement = row.querySelector(".quantity-value");
+        var currentQuantity = parseInt(quantityElement.textContent);
+
+        if (isIncrease) {
+          currentQuantity++;
+        } else {
+          currentQuantity = Math.max(currentQuantity - 1, 0);
+        }
+
+        quantityElement.textContent = currentQuantity;
+        updateTotalPrice();
+      }
+
+      function deleteItem(row) {
+        row.remove();
+        updateTotalPrice();
+      }
+
+      function likeItem(heartBtn) {
+        heartBtn.classList.toggle("liked");
+        updateTotalPrice();
+      }
+
+      function updateTotalPrice() {
+        var rows = document.querySelectorAll("#cart tbody tr");
+        var totalPrice = 0;
+
+        rows.forEach(function (row) {
+          var quantity = parseInt(
+            row.querySelector(".quantity-value").textContent
+          );
+          var price = parseFloat(
+            row.querySelector(".price").textContent.slice(1)
+          );
+          var isLiked = row
+            .querySelector(".heart-btn")
+            .classList.contains("liked");
+
+          totalPrice += isLiked ? price * quantity * 1.2 : price * quantity;
+        });
+
+        document.getElementById("totalPrice").textContent =
+          "Total Price: $" + totalPrice.toFixed(2);
+      }
+
+      function addProduct() {
+        var productName = document.getElementById("productName").value;
+        var productPrice = parseFloat(
+          document.getElementById("productPrice").value
+        );
+
+        if (!productName || isNaN(productPrice)) {
+          alert("Please enter valid product details.");
+          return;
+        }
+
+        var tbody = document.querySelector("#cart tbody");
+
+        // Create a new row
+        var newRow = document.createElement("tr");
+        newRow.innerHTML = `
+                <td>${productName}</td>
+                <td class="price">$${productPrice.toFixed(2)}</td>
+                <td class="quantity">
+                    <button onclick="adjustQuantity(this.parentNode.parentNode, true)">+</button>
+                    <span class="quantity-value">1</span>
+                    <button onclick="adjustQuantity(this.parentNode.parentNode, false)">-</button>
+                </td>
+                <td>
+                    <button class="delete-btn" onclick="deleteItem(this.parentNode.parentNode)">Delete</button>
+                </td>
+                <td>
+                    <span class="heart-btn" onclick="likeItem(this)"><i class="fas fa-heart"></i></span>
+                </td>
+            `;
+
+        tbody.appendChild(newRow);
+        updateTotalPrice();
+
+        // Clear input fields
+        document.getElementById("productName").value = "";
+        document.getElementById("productPrice").value = "";
+      }
+    </script>
+  </head>
+  <body>
+    <div id="cart">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Action</th>
+            <th>Like</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Existing items go here -->
+        </tbody>
+      </table>
+
+      <div id="totalPrice">Total Price: $0.00</div>
+
+      <!-- Add product form -->
+      <div id="addProductForm">
+        <h3>Add a New Product</h3>
+        <input type="text" id="productName" placeholder="Product Name" />
+        <input type="number" id="productPrice" placeholder="Product Price" />
+        <button onclick="addProduct()">Add Product</button>
+      </div>
+    </div>
+  </body>
+</html>
